@@ -60,7 +60,7 @@ Note: API calls require the tool to be run within an environment that has Anthro
 
 This tool is a companion to the following publications:
 
-- **CBEF Methodology Paper:** Copas, M. (2026h) *Constraint-Based Evaluation Framework (CBEF): A Portable Method for Adjudicating Disputed Claims at the Orthodox–Heterodox Boundary.* Zenodo. [DOI to be inserted on publication]
+- **CBEF Methodology Paper:** Copas, M. (2026h) *Constraint-Based Evaluation Framework (CBEF): A Portable Method for Adjudicating Disputed Claims at the Orthodox–Heterodox Boundary.* Zenodo. [https://doi.org/10.5281/zenodo.19382177]
 - **CBEF Application Paper:** Copas, M. (2026i) *The Fourth Dynasty Pyramid Programme Under Constraint-Based Evaluation: A Full Application of the CBEF Framework.* Zenodo. [DOI to be inserted on publication]
 - **Pyramid Constraint Engine:** A related tool modelling six Fourth Dynasty structures as a constrained throughput system. [github.com/markcocoscopas/pyramid-constraint-model](https://github.com/markcopas/pyramid-constraint-model) · DOI: [10.5281/zenodo.19332531](https://doi.org/10.5281/zenodo.19332531)
 
