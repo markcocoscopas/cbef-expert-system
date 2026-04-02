@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+message: "If you use this software in published research, please cite it as below."
+type: software
+title: "CBEF Expert System: An Automated Implementation of the Constraint-Based Evaluation Framework"
+abstract: >
+  A browser-based AI tool that applies the Constraint-Based Evaluation Framework (CBEF)
+  to disputed claims in ancient construction and archaeology. The system implements the
+  six-stage CBEF procedure automatically, producing structured analysis reports including
+  scenario tables, bottleneck hierarchies, and formally stated research questions,
+  all derived from published orthodox sources under a neutral auditor methodology.
+authors:
+  - family-names: Copas
+    given-names: Mark
+    orcid: "https://orcid.org/0009-0005-9777-2019"
+repository-code: "https://github.com/markcopas/cbef-expert-system"
+license: MIT
+version: "1.0.0"
+date-released: "2026-04-01"
+keywords:
+  - constraint-based evaluation
+  - archaeological methodology
+  - ancient construction
+  - orthodox-heterodox debate
+  - feasibility analysis
+  - pyramid construction
+  - expert system
+  - project management
+references:
+  - type: article
+    title: >
+      Constraint-Based Evaluation Framework (CBEF): A Portable Method for
+      Adjudicating Disputed Claims at the Orthodox–Heterodox Boundary
+    authors:
+      - family-names: Copas
+        given-names: Mark
+        orcid: "https://orcid.org/0009-0005-9777-2019"
+    year: 2026
+    notes: "Zenodo preprint. DOI to be inserted on publication."

@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CBEF Expert System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,300;1,8..60,400&display=swap');
+
+  :root {
+    --stone: #2a2520;
+    --sand: #f5f0e8;
+    --papyrus: #ede5d0;
+    --ochre: #c8922a;
+    --ochre-light: #e8b84b;
+    --terracotta: #b85c38;
+    --copper: #7c4a1e;
+    --dark-copper: #3d2010;
+    --slate: #4a4540;
+    --mist: #f9f6f0;
+    --fail-red: #8b2020;
+    --warn-amber: #7a5500;
+    --pass-green: #2a5a2a;
+    --neutral: #3a4a5a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--stone);
+    color: var(--sand);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* Subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 52px;
+    padding-bottom: 36px;
+    border-bottom: 1px solid rgba(200, 146, 42, 0.3);
+  }
+
+  .header-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 38px;
+    font-weight: 700;
+    color: var(--sand);
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+
+  .header h1 span {
+    color: var(--ochre);
+  }
+
+  .header-sub {
+    font-size: 14px;
+    color: rgba(245, 240, 232, 0.55);
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+  }
+
+  /* Input panel */
+  .input-panel {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200, 146, 42, 0.2);
+    border-radius: 4px;
+    padding: 36px;
+    margin-bottom: 32px;
+  }
+
+  .input-panel h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--ochre-light);
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(200,146,42,0.15);
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 8px;
+  }
+
+  .field input, .field textarea, .field select {
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid rgba(200,146,42,0.25);
+    border-radius: 3px;
+    color: var(--sand);
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    transition: border-color 0.2s;
+    resize: vertical;
+  }
+
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--ochre);
+    background: rgba(0,0,0,0.35);
+  }
+
+  .field textarea { min-height: 80px; }
+
+  .field select option { background: #2a2520; }
+
+  .field-hint {
+    font-size: 12px;
+    color: rgba(245,240,232,0.4);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  .fields-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  /* Run button */
+  .run-btn {
+    width: 100%;
+    padding: 16px 24px;
+    background: var(--ochre);
+    color: var(--dark-copper);
+    border: none;
+    border-radius: 3px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+
+  .run-btn:hover:not(:disabled) {
+    background: var(--ochre-light);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(200,146,42,0.3);
+  }
+
+  .run-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Status */
+  .status {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: rgba(200,146,42,0.08);
+    border: 1px solid rgba(200,146,42,0.2);
+    border-radius: 3px;
+    margin-bottom: 32px;
+    font-size: 14px;
+    color: var(--ochre-light);
+    font-style: italic;
+  }
+
+  .status.visible { display: flex; }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(200,146,42,0.3);
+    border-top-color: var(--ochre);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Report */
+  .report {
+    display: none;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .report.visible { display: block; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  .report-header {
+    margin-bottom: 36px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid rgba(200,146,42,0.25);
+  }
+
+  .report-header .label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    margin-bottom: 10px;
+  }
+
+  .report-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    color: var(--sand);
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+
+  .report-meta {
+    font-size: 12px;
+    color: rgba(245,240,232,0.4);
+    letter-spacing: 0.05em;
+  }
+
+  /* Verdict bar */
+  .verdict-bar {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+
+  .verdict-chip {
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .chip-fail { background: rgba(139,32,32,0.25); color: #e07070; border: 1px solid rgba(139,32,32,0.4); }
+  .chip-warn { background: rgba(122,85,0,0.25); color: #e0b060; border: 1px solid rgba(122,85,0,0.4); }
+  .chip-pass { background: rgba(42,90,42,0.25); color: #80c080; border: 1px solid rgba(42,90,42,0.4); }
+  .chip-neutral { background: rgba(58,74,90,0.25); color: #90a8c0; border: 1px solid rgba(58,74,90,0.4); }
+
+  /* Stages */
+  .stage {
+    margin-bottom: 28px;
+    border: 1px solid rgba(200,146,42,0.15);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 20px;
+    background: rgba(200,146,42,0.07);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+
+  .stage-header:hover { background: rgba(200,146,42,0.12); }
+
+  .stage-num {
+    width: 28px; height: 28px;
+    background: var(--ochre);
+    color: var(--dark-copper);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .stage-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--sand);
+    flex: 1;
+  }
+
+  .stage-toggle {
+    color: var(--ochre);
+    font-size: 18px;
+    transition: transform 0.2s;
+  }
+
+  .stage.collapsed .stage-toggle { transform: rotate(-90deg); }
+
+  .stage-body {
+    padding: 20px 24px;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: rgba(245,240,232,0.85);
+  }
+
+  .stage.collapsed .stage-body { display: none; }
+
+  /* Scenario table */
+  .scenario-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13.5px;
+  }
+
+  .scenario-table th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ochre);
+    border-bottom: 1px solid rgba(200,146,42,0.25);
+    font-weight: 600;
+  }
+
+  .scenario-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: rgba(245,240,232,0.8);
+    vertical-align: top;
+  }
+
+  .scenario-table tr:last-child td { border-bottom: none; }
+
+  .scenario-table .conservative { color: #80c080; }
+  .scenario-table .central { color: #e0b060; }
+  .scenario-table .high { color: #e07070; }
+
+  td.result-fail { color: #e07070; font-weight: 600; }
+  td.result-warn { color: #e0b060; }
+  td.result-pass { color: #80c080; }
+
+  /* Bottleneck list */
+  .bottleneck-list { list-style: none; margin: 12px 0; }
+
+  .bottleneck-item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .bottleneck-item:last-child { border-bottom: none; }
+
+  .bottleneck-rank {
+    width: 24px; height: 24px;
+    background: rgba(200,146,42,0.15);
+    border: 1px solid rgba(200,146,42,0.3);
+    color: var(--ochre);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* RQs */
+  .rq-list { list-style: none; }
+
+  .rq-item {
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    gap: 14px;
+  }
+
+  .rq-item:last-child { border-bottom: none; }
+
+  .rq-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    color: var(--ochre);
+    font-weight: 700;
+    min-width: 32px;
+    padding-top: 1px;
+  }
+
+  /* Raw text rendering */
+  .stage-body p { margin-bottom: 12px; }
+  .stage-body p:last-child { margin-bottom: 0; }
+
+  /* Error */
+  .error-msg {
+    display: none;
+    padding: 16px 20px;
+    background: rgba(139,32,32,0.15);
+    border: 1px solid rgba(139,32,32,0.35);
+    border-radius: 3px;
+    color: #e07070;
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .error-msg.visible { display: block; }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(200,146,42,0.15);
+    font-size: 11px;
+    color: rgba(245,240,232,0.25);
+    letter-spacing: 0.05em;
+  }
+
+  .new-analysis-btn {
+    display: none;
+    margin: 32px auto 0;
+    padding: 12px 28px;
+    background: transparent;
+    border: 1px solid rgba(200,146,42,0.4);
+    color: var(--ochre);
+    border-radius: 3px;
+    font-family: 'Source Serif 4', serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .new-analysis-btn.visible { display: block; }
+  .new-analysis-btn:hover { background: rgba(200,146,42,0.1); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="header-eyebrow">Copas 2026 · Analytical Instrument</div>
+    <h1>CBEF <span>Expert System</span></h1>
+    <div class="header-sub">Constraint-Based Evaluation Framework &mdash; Automated Six-Stage Analysis</div>
+  </div>
+
+  <!-- Input Panel -->
+  <div class="input-panel" id="inputPanel">
+    <h2>Define the Claim</h2>
+
+    <div class="field">
+      <label>Claim to Evaluate</label>
+      <textarea id="claim" placeholder="e.g. The hydraulic lift hypothesis of Landreau et al. (2024) provides a feasible mechanism for constructing the Step Pyramid of Djoser using water-powered block lifting." rows="3"></textarea>
+    </div>
+
+    <div class="fields-row">
+      <div class="field">
+        <label>Domain</label>
+        <select id="domain">
+          <option value="ancient egyptian construction">Ancient Egyptian Construction</option>
+          <option value="ancient near east">Ancient Near East</option>
+          <option value="prehistoric monuments">Prehistoric Monuments</option>
+          <option value="classical antiquity">Classical Antiquity</option>
+          <option value="pre-columbian americas">Pre-Columbian Americas</option>
+          <option value="other ancient construction">Other Ancient Construction</option>
+          <option value="general archaeological">General Archaeological</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Position Under Test</label>
+        <select id="position">
+          <option value="orthodox">Orthodox / Mainstream</option>
+          <option value="heterodox">Heterodox / Alternative</option>
+          <option value="both">Both — Evaluate All Sides</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Known Parameters (optional)</label>
+      <textarea id="params" placeholder="e.g. Stone volume: ~330,000 tonnes. Pyramid height: 62.5m. North shaft depth: 28m. Construction period: c. 2670 BCE. Workforce: unknown." rows="3"></textarea>
+      <div class="field-hint">Any quantitative data you already have — the system will supplement with published sources.</div>
+    </div>
+
+    <div class="field">
+      <label>Key Sources to Include (optional)</label>
+      <input type="text" id="sources" placeholder="e.g. Landreau et al. (2024), Stocks (2003), Lehner (1997)">
+    </div>
+
+    <button class="run-btn" id="runBtn" onclick="runCBEF()">
+      &#9654;&nbsp;&nbsp;Run CBEF Analysis
+    </button>
+  </div>
+
+  <!-- Status -->
+  <div class="status" id="status">
+    <div class="spinner"></div>
+    <span id="statusText">Initialising six-stage constraint analysis...</span>
+  </div>
+
+  <!-- Error -->
+  <div class="error-msg" id="errorMsg"></div>
+
+  <!-- Report -->
+  <div class="report" id="report"></div>
+
+  <button class="new-analysis-btn" id="newBtn" onclick="resetForm()">
+    &#8592;&nbsp; Run Another Analysis
+  </button>
+
+  <div class="footer">
+    CBEF · Copas (2026) · Independent Research · ORCID 0009-0005-9777-2019
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are the CBEF Expert System, an automated implementation of the Constraint-Based Evaluation Framework (CBEF) developed by Mark Copas (2026). Your role is to apply rigorous constraint-based analysis to disputed claims in ancient construction and archaeology.
+
+CBEF proceeds in exactly six stages. You must apply ALL six stages to every analysis. Use only published, orthodox sources for parameter estimation — never invent data.
+
+The six stages are:
+
+STAGE 1 — PROBLEM BOUNDING
+State the precise claim under evaluation. Convert vague claims into testable quantitative propositions. Identify all implied physical and resource parameters. State boundary conditions clearly.
+
+STAGE 2 — CONSTRAINT IDENTIFICATION
+Identify ALL relevant constraints as: Hard Constraints (physical laws, material properties, biological requirements — cannot be relaxed), Soft Constraints (organisational, logistical, behavioural — subject to uncertainty), and Interaction Constraints (where two subsystems compete for the same resource or impose dependencies on each other). The interaction constraints are analytically critical and must not be omitted.
+
+STAGE 3 — PARAMETER ESTIMATION
+For each constraint, provide three values: Conservative (most favourable to the hypothesis under test), Central (best-estimate from published evidence), High (most demanding). Every value must cite a published source. Parameters that cannot be grounded in published evidence must be explicitly flagged as unknown.
+
+STAGE 4 — BOUNDED SCENARIO MODELLING
+Evaluate each scenario (conservative, central, high) systematically. For each subsystem under each scenario: does demand exceed supply? Quantify the margin. State explicitly whether the system passes, fails, or is marginal. A claim that fails under the conservative scenario — designed to be maximally favourable — is strongly disfavoured. Use a summary table.
+
+STAGE 5 — BOTTLENECK IDENTIFICATION
+Identify the binding constraint: the subsystem whose capacity is most severely tested relative to demand. Rank all bottlenecks. Note any zero-slack conditions (where multiple subsystems simultaneously approach their ceilings). The bottleneck hierarchy is the key analytical finding.
+
+STAGE 6 — RESEARCH QUESTION FORMULATION
+Convert findings into formally stated, empirically resolvable research questions. These are NOT conclusions — they are precise specifications of what evidence would resolve the identified tensions. Order by analytical priority.
+
+RESPONSE FORMAT:
+Return your analysis as a structured JSON object with this exact schema:
+{
+  "title": "brief descriptive title for the analysis",
+  "claim_evaluated": "the precise claim as bounded in Stage 1",
+  "overall_verdict": "one of: FAILS_ALL_SCENARIOS | FAILS_CENTRAL | MARGINAL | FEASIBLE | INCONCLUSIVE",
+  "verdict_chips": [{"label": "...", "type": "fail|warn|pass|neutral"}],
+  "stages": [
+    {
+      "number": 1,
+      "title": "Problem Bounding",
+      "content": "full prose text of Stage 1 analysis"
+    },
+    ... (all 6 stages)
+  ],
+  "scenario_table": [
+    {"subsystem": "...", "conservative": "...", "conservative_result": "pass|warn|fail", "central": "...", "central_result": "pass|warn|fail", "high": "...", "high_result": "pass|warn|fail"}
+  ],
+  "bottlenecks": [
+    {"rank": 1, "name": "...", "description": "...", "severity": "fail|warn|pass"}
+  ],
+  "research_questions": [
+    {"number": 1, "question": "..."}
+  ],
+  "key_finding": "one sentence — the single most important analytical result"
+}
+
+CRITICAL RULES:
+- The neutral auditor position is mandatory. Never advocate for orthodox or heterodox.
+- Conservative scenario must be maximally favourable to the hypothesis under test.
+- All parameter values must cite published sources by author-date.
+- The interaction constraints in Stage 2 are analytically essential — do not omit them.
+- Research questions must be empirically resolvable, not interpretive opinions.
+- Return ONLY the JSON object. No preamble, no markdown fences.`;
+
+const STATUS_MESSAGES = [
+  "Bounding the problem and identifying testable parameters...",
+  "Identifying hard, soft, and interaction constraints...",
+  "Estimating parameters across conservative, central, and high scenarios...",
+  "Modelling bounded scenarios and checking subsystem feasibility...",
+  "Identifying binding constraints and bottleneck hierarchy...",
+  "Formulating research questions and compiling report..."
+];
+
+let statusInterval;
+
+function cycleStatus() {
+  let i = 0;
+  const el = document.getElementById('statusText');
+  el.textContent = STATUS_MESSAGES[0];
+  statusInterval = setInterval(() => {
+    i = (i + 1) % STATUS_MESSAGES.length;
+    el.textContent = STATUS_MESSAGES[i];
+  }, 4500);
+}
+
+async function runCBEF() {
+  const claim = document.getElementById('claim').value.trim();
+  if (!claim) { alert('Please enter a claim to evaluate.'); return; }
+
+  const domain = document.getElementById('domain').value;
+  const position = document.getElementById('position').value;
+  const params = document.getElementById('params').value.trim();
+  const sources = document.getElementById('sources').value.trim();
+
+  const userMessage = `Please run a full CBEF analysis on the following:
+
+CLAIM: ${claim}
+DOMAIN: ${domain}
+POSITION UNDER TEST: ${position}
+${params ? `KNOWN PARAMETERS: ${params}` : ''}
+${sources ? `KEY SOURCES: ${sources}` : ''}
+
+Apply all six CBEF stages rigorously. Use published orthodox sources throughout. Return the JSON analysis object.`;
+
+  // UI state
+  document.getElementById('runBtn').disabled = true;
+  document.getElementById('inputPanel').style.opacity = '0.5';
+  document.getElementById('inputPanel').style.pointerEvents = 'none';
+  document.getElementById('status').classList.add('visible');
+  document.getElementById('errorMsg').classList.remove('visible');
+  document.getElementById('report').classList.remove('visible');
+  document.getElementById('newBtn').classList.remove('visible');
+  cycleStatus();
+
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: "user", content: userMessage }]
+      })
+    });
+
+    const data = await response.json();
+    clearInterval(statusInterval);
+
+    if (!response.ok || !data.content) {
+      throw new Error(data.error?.message || 'API request failed');
+    }
+
+    const rawText = data.content.map(b => b.text || '').join('');
+    const clean = rawText.replace(/```json|```/g, '').trim();
+    
+    let result;
+    try {
+      result = JSON.parse(clean);
+    } catch(e) {
+      throw new Error('Could not parse analysis results. Please try again.');
+    }
+
+    renderReport(result, claim);
+    document.getElementById('status').classList.remove('visible');
+    document.getElementById('report').classList.add('visible');
+    document.getElementById('newBtn').classList.add('visible');
+
+  } catch(err) {
+    clearInterval(statusInterval);
+    document.getElementById('status').classList.remove('visible');
+    const errEl = document.getElementById('errorMsg');
+    errEl.textContent = 'Analysis failed: ' + err.message;
+    errEl.classList.add('visible');
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('inputPanel').style.opacity = '1';
+    document.getElementById('inputPanel').style.pointerEvents = 'auto';
+  }
+}
+
+function renderReport(r, originalClaim) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-IE', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Chips
+  const chips = (r.verdict_chips || []).map(c => 
+    `<span class="verdict-chip chip-${c.type}">${escHtml(c.label)}</span>`
+  ).join('');
+
+  // Stages
+  const stages = (r.stages || []).map(s => `
+    <div class="stage" id="stage${s.number}">
+      <div class="stage-header" onclick="toggleStage(${s.number})">
+        <div class="stage-num">${s.number}</div>
+        <div class="stage-title">${escHtml(s.title)}</div>
+        <div class="stage-toggle">&#9660;</div>
+      </div>
+      <div class="stage-body">${formatContent(s.content, s.number, r)}</div>
+    </div>
+  `).join('');
+
+  // Summary table in stage 4
+  // Research questions in stage 6
+  // These are injected by formatContent
+
+  document.getElementById('report').innerHTML = `
+    <div class="report-header">
+      <div class="label">CBEF Analysis Report</div>
+      <h2>${escHtml(r.title || 'Constraint-Based Evaluation')}</h2>
+      <div class="report-meta">Generated ${dateStr} &nbsp;·&nbsp; CBEF Framework (Copas 2026h) &nbsp;·&nbsp; All parameters from published orthodox sources</div>
+    </div>
+
+    <div style="margin-bottom:24px; padding:16px 20px; background:rgba(200,146,42,0.06); border:1px solid rgba(200,146,42,0.18); border-radius:3px; font-size:13.5px; color:rgba(245,240,232,0.7); font-style:italic;">
+      <strong style="color:var(--ochre); font-style:normal;">Key Finding:</strong> ${escHtml(r.key_finding || '')}
+    </div>
+
+    <div class="verdict-bar">${chips}</div>
+
+    ${stages}
+
+    <div class="stage" id="stageTable">
+      <div class="stage-header" onclick="toggleStageById('stageTable')">
+        <div class="stage-num" style="background:rgba(200,146,42,0.3);color:var(--ochre);">&#9776;</div>
+        <div class="stage-title">Scenario Summary Table</div>
+        <div class="stage-toggle">&#9660;</div>
+      </div>
+      <div class="stage-body">${buildTable(r.scenario_table)}</div>
+    </div>
+
+    <div class="stage" id="stageBN">
+      <div class="stage-header" onclick="toggleStageById('stageBN')">
+        <div class="stage-num" style="background:rgba(200,146,42,0.3);color:var(--ochre);">&#9650;</div>
+        <div class="stage-title">Bottleneck Hierarchy</div>
+        <div class="stage-toggle">&#9660;</div>
+      </div>
+      <div class="stage-body">${buildBottlenecks(r.bottlenecks)}</div>
+    </div>
+
+    <div class="stage" id="stageRQ">
+      <div class="stage-header" onclick="toggleStageById('stageRQ')">
+        <div class="stage-num" style="background:rgba(200,146,42,0.3);color:var(--ochre);">?</div>
+        <div class="stage-title">Research Questions</div>
+        <div class="stage-toggle">&#9660;</div>
+      </div>
+      <div class="stage-body">${buildRQs(r.research_questions)}</div>
+    </div>
+  `;
+}
+
+function formatContent(text, stageNum, r) {
+  if (!text) return '';
+  return text.split('\n').filter(l => l.trim()).map(l => `<p>${escHtml(l)}</p>`).join('');
+}
+
+function buildTable(rows) {
+  if (!rows || !rows.length) return '<p>No scenario data available.</p>';
+  return `<table class="scenario-table">
+    <thead><tr>
+      <th>Subsystem</th>
+      <th class="conservative">Conservative</th>
+      <th class="central">Central</th>
+      <th class="high">High</th>
+    </tr></thead>
+    <tbody>
+      ${rows.map(row => `<tr>
+        <td>${escHtml(row.subsystem)}</td>
+        <td class="result-${row.conservative_result||'neutral'}">${escHtml(row.conservative)}</td>
+        <td class="result-${row.central_result||'neutral'}">${escHtml(row.central)}</td>
+        <td class="result-${row.high_result||'neutral'}">${escHtml(row.high)}</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+
+function buildBottlenecks(bns) {
+  if (!bns || !bns.length) return '<p>No bottlenecks identified.</p>';
+  return `<ul class="bottleneck-list">${bns.map(b => `
+    <li class="bottleneck-item">
+      <div class="bottleneck-rank">${b.rank}</div>
+      <div>
+        <div style="font-weight:600;color:${b.severity==='fail'?'#e07070':b.severity==='warn'?'#e0b060':'#80c080'};margin-bottom:4px;">${escHtml(b.name)}</div>
+        <div style="font-size:13.5px;">${escHtml(b.description)}</div>
+      </div>
+    </li>`).join('')}</ul>`;
+}
+
+function buildRQs(rqs) {
+  if (!rqs || !rqs.length) return '<p>No research questions generated.</p>';
+  return `<ul class="rq-list">${rqs.map(q => `
+    <li class="rq-item">
+      <div class="rq-num">RQ-${q.number}</div>
+      <div style="font-size:14px;line-height:1.7;">${escHtml(q.question)}</div>
+    </li>`).join('')}</ul>`;
+}
+
+function toggleStage(num) {
+  document.getElementById('stage' + num).classList.toggle('collapsed');
+}
+
+function toggleStageById(id) {
+  document.getElementById(id).classList.toggle('collapsed');
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function resetForm() {
+  document.getElementById('report').classList.remove('visible');
+  document.getElementById('newBtn').classList.remove('visible');
+  document.getElementById('errorMsg').classList.remove('visible');
+  document.getElementById('inputPanel').style.opacity = '1';
+  document.getElementById('inputPanel').style.pointerEvents = 'auto';
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('claim').value = '';
+  document.getElementById('params').value = '';
+  document.getElementById('sources').value = '';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+</script>
+</body>
+</html>
