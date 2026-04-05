@@ -58,7 +58,7 @@ The server is ~90 lines of Python using only the standard library. It serves the
 
 | File | Purpose |
 |------|---------|
-| `cbef_expert_system.html` | The CBEF Expert System interface |
+| `index.html` | The CBEF Expert System interface |
 | `server.py` | Local proxy server (Python 3.7+, standard library only) |
 | `README.md` | This file |
 | `CITATION.cff` | Citation metadata |
