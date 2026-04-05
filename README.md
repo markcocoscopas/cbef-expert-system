@@ -1,23 +1,40 @@
 # CBEF Expert System
 
-**An automated implementation of the Constraint-Based Evaluation Framework for adjudicating disputed claims at the orthodox–heterodox boundary in ancient construction and archaeology.**
+**Constraint-Based Evaluation Framework — Automated Six-Stage Analysis**
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXX)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+A browser-based tool that applies the Constraint-Based Evaluation Framework (CBEF) as defined in Copas (2026h) to any disputed claim in ancient construction or archaeology.
 
----
+The tool implements all six CBEF stages automatically, using Claude (Anthropic) as its analytical engine with the full CBEF methodology embedded in the system prompt.
 
-## What Is This?
+## Quick Start
 
-The CBEF Expert System is a browser-based AI tool that applies the **Constraint-Based Evaluation Framework (CBEF)** — a portable methodology for evaluating disputed claims through systematic constraint analysis — to any ancient construction or archaeological hypothesis the user supplies.
+**Requirements:** Python 3.7+ (standard library only — no pip installs) and an [Anthropic API key](https://console.anthropic.com/settings/keys).
 
-It implements the six-stage CBEF procedure defined in Copas (2026h) automatically, using Claude (Anthropic) as its analytical engine with the full CBEF methodology baked into the system prompt.
+```bash
+# 1. Clone the repo
+git clone https://github.com/markcocoscopas/cbef-expert-system.git
+cd cbef-expert-system
 
-**Input:** A claim to evaluate, a domain, known parameters, and optional key sources.
+# 2. Start the local server
+python server.py
 
-**Output:** A structured six-stage analysis report including scenario tables, a ranked bottleneck hierarchy, and formally stated research questions — all derived from published orthodox sources.
+# 3. Open in your browser
+# http://localhost:8080
+```
 
----
+Enter your API key in the interface, define a claim, and click **Run CBEF Analysis**.
+
+Your API key is sent directly to the Anthropic API — it is never stored, logged, or transmitted anywhere else.
+
+## How It Works
+
+The tool cannot call the Anthropic API directly from the browser (browsers block cross-origin requests for security). The included `server.py` acts as a lightweight local proxy:
+
+```
+Browser  →  localhost:8080/api/messages  →  server.py  →  api.anthropic.com
+```
+
+The server is ~90 lines of Python using only the standard library. It serves the HTML file and forwards API requests — nothing else.
 
 ## The Six Stages
 
@@ -30,65 +47,45 @@ It implements the six-stage CBEF procedure defined in Copas (2026h) automaticall
 | 5 | Bottleneck Identification | Ranked binding constraints |
 | 6 | Research Question Formulation | Formally stated, empirically resolvable questions |
 
----
-
 ## Key Design Principles
 
 - **Neutral auditor position.** The system does not advocate for orthodox or heterodox positions. It applies identical quantitative standards to all claims.
 - **Published sources only.** All parameter values must be traceable to a published source. Invented data are not permitted.
-- **No verdicts — only structured questions.** The framework produces research agendas, not conclusions. This is appropriate given the evidentiary situation in most ancient construction disputes.
-- **Conservative scenario discipline.** The conservative scenario is explicitly designed to be maximally favourable to the hypothesis under test. A claim that fails under the conservative scenario is strongly disfavoured.
+- **No verdicts — only structured questions.** The framework produces research agendas, not conclusions.
+- **Conservative scenario discipline.** The conservative scenario is maximally favourable to the hypothesis under test. A claim that fails under the conservative scenario is strongly disfavoured.
 
----
+## Files
 
-## How to Use
+| File | Purpose |
+|------|---------|
+| `cbef_expert_system.html` | The CBEF Expert System interface |
+| `server.py` | Local proxy server (Python 3.7+, standard library only) |
+| `README.md` | This file |
+| `CITATION.cff` | Citation metadata |
+| `LICENSE` | MIT Licence |
 
-The tool is a single self-contained HTML file with no build step and no external dependencies beyond the Anthropic API (which is called at runtime via Claude.ai's infrastructure when run in that environment).
+## Companion Publications
 
-**To run locally:**
-
-1. Clone or download this repository.
-2. Open `index.html` in a modern browser.
-3. Enter a claim, domain, and any known parameters.
-4. Click **Run CBEF Analysis**.
-
-Note: API calls require the tool to be run within an environment that has Anthropic API access configured. When run as an artifact within Claude.ai, this is handled automatically.
-
----
-
-## Companion Resources
-
-This tool is a companion to the following publications:
-
-- **CBEF Methodology Paper:** Copas, M. (2026h) *Constraint-Based Evaluation Framework (CBEF): A Portable Method for Adjudicating Disputed Claims at the Orthodox–Heterodox Boundary.* Zenodo. [https://doi.org/10.5281/zenodo.19382177]
-- **CBEF Application Paper:** Copas, M. (2026i) *The Fourth Dynasty Pyramid Programme Under Constraint-Based Evaluation: A Full Application of the CBEF Framework.* Zenodo. [DOI to be inserted on publication]
-- **Pyramid Constraint Engine:** A related tool modelling six Fourth Dynasty structures as a constrained throughput system. [github.com/markcocoscopas/pyramid-constraint-model](https://github.com/markcopas/pyramid-constraint-model) · DOI: [10.5281/zenodo.19332531](https://doi.org/10.5281/zenodo.19332531)
-
----
+- **CBEF Methodology Paper:** Copas, M. (2026h) *Constraint-Based Evaluation Framework (CBEF): A Portable Method for Adjudicating Disputed Claims at the Orthodox–Heterodox Boundary.* Zenodo.
+- **CBEF Application Paper:** Copas, M. (2026i) *The Fourth Dynasty Pyramid Programme Under Constraint-Based Evaluation.* Zenodo.
 
 ## Citation
 
-If you use this tool in published research, please cite:
-
+```bibtex
+@software{copas_cbef_2026,
+  author = {Copas, Mark},
+  title = {CBEF Expert System},
+  year = {2026},
+  url = {https://github.com/markcocoscopas/cbef-expert-system},
+  doi = {10.5281/zenodo.19382177},
+  licence = {MIT}
+}
 ```
-Copas, M. (2026) CBEF Expert System: An Automated Implementation of the
-Constraint-Based Evaluation Framework. GitHub.
-https://github.com/markcopas/cbef-expert-system
-DOI: 10.5281/zenodo.XXXXXXX
-```
-
-See `CITATION.cff` for machine-readable citation metadata.
-
----
-
-## Author
-
-**Mark Copas**  
-Independent Researcher, Mallow, Ireland  
-ORCID: [0009-0005-9777-2019](https://orcid.org/0009-0005-9777-2019)
-
----
 
 ## Licence
 
-MIT. See `LICENSE` for details.
+MIT — see [LICENSE](LICENSE).
+
+---
+
+ORCID: [0009-0005-9777-2019](https://orcid.org/0009-0005-9777-2019)
